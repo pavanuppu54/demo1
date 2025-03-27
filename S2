@@ -1,0 +1,40 @@
+@Service
+public class EmployeeService {
+
+    @Autowired
+    private EmployeeRepository employeeRepository;
+
+    @Autowired
+    private DepartmentRepository departmentRepository;
+
+    // Save employee and department (Create department if it doesn't exist)
+    public Employee saveEmployee(Employee employee) {
+        Department department = employee.getDepartment();
+
+        // Check if the department with the same name and location already exists
+        Department existingDepartment = departmentRepository.findByNameAndLocation(department.getName(), department.getLocation());
+
+        if (existingDepartment != null) {
+            // Reuse the existing department
+            employee.setDepartment(existingDepartment);
+        } else {
+            // Save the new department
+            department = departmentRepository.save(department);
+            employee.setDepartment(department);
+        }
+
+        // Save the employee (the employee ID will be auto-generated)
+        return employeeRepository.save(employee);
+    }
+
+    // Method to get all employees
+    public List<Employee> getAllEmployees() {
+        return employeeRepository.findAll();
+    }
+
+    // Method to get employee by ID
+    public Employee getEmployeeById(Long id) {
+        return employeeRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Employee not found with id: " + id));
+    }
+}
