@@ -1,0 +1,38 @@
+@Service
+public class EmployeeService {
+
+    @Autowired
+    private EmployeeRepository employeeRepository;
+
+    @Autowired
+    private DepartmentRepository departmentRepository;
+
+    // Save employee and associate with an existing department
+    public Employee saveEmployee(Employee employee) {
+        // Get the existing department by ID from the employee
+        Long departmentId = employee.getDepartment().getId();
+        if (departmentId == null) {
+            throw new IllegalArgumentException("Department ID must not be null.");
+        }
+
+        Department department = departmentRepository.findById(departmentId)
+            .orElseThrow(() -> new ResourceNotFoundException("Department not found with id: " + departmentId));
+
+        // Associate the found department with the employee
+        employee.setDepartment(department);
+
+        // Save the employee (the employee ID will be auto-generated)
+        return employeeRepository.save(employee);
+    }
+
+    // Method to get all employees
+    public List<Employee> getAllEmployees() {
+        return employeeRepository.findAll();
+    }
+
+    // Method to get employee by ID
+    public Employee getEmployeeById(Long id) {
+        return employeeRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Employee not found with id: " + id));
+    }
+}
